@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2FA Authenticator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/otpauth/9.1.4/otpauth.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --glass-bg: rgba(255, 255, 255, 0.15);
+            --glass-border: rgba(255, 255, 255, 0.2);
+            --text-color: #ffffff;
+            --accent-color: #00d2ff;
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(-45deg, #0f2027, #203a43, #2c5364);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0;
+            color: var(--text-color);
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 420px;
+            padding: 20px;
+        }
+
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 35px 30px;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Hiasan background lingkaran blur */
+        .glass-card::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: -50px;
+            width: 100px;
+            height: 100px;
+            background: rgba(0, 210, 255, 0.2);
+            border-radius: 50%;
+            filter: blur(40px);
+            z-index: -1;
+        }
+
+        h2 {
+            margin: 0 0 25px 0;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-size: 1.5rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+            text-align: left;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.85rem;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            color: white;
+            font-size: 1.1rem;
+            outline: none;
+            box-sizing: border-box;
+            text-align: center;
+            letter-spacing: 1px;
+            transition: all 0.3s ease;
+            font-family: monospace;
+        }
+
+        input:focus {
+            background: rgba(0, 0, 0, 0.4);
+            border-color: var(--accent-color);
+            box-shadow: 0 0 15px rgba(0, 210, 255, 0.2);
+        }
+
+        button.btn-generate {
+            width: 100%;
+            padding: 15px;
+            background: var(--accent-color);
+            background: linear-gradient(90deg, #00d2ff 0%, #3a7bd5 100%);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-shadow: 0 1px 2px rgba(0,0,0,0.2);
+        }
+
+        button.btn-generate:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 20px rgba(0, 210, 255, 0.3);
+        }
+
+        /* Result Area */
+        .result-container {
+            margin-top: 30px;
+            padding-top: 25px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            display: none; 
+            animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .label-result {
+            font-size: 0.75rem; 
+            text-transform: uppercase; 
+            letter-spacing: 2px;
+            color: rgba(255,255,255,0.5);
+            margin-bottom: 5px;
+        }
+
+        .token-display {
+            font-family: 'Courier New', monospace;
+            font-size: 3rem;
+            font-weight: bold;
+            letter-spacing: 4px;
+            margin: 10px 0 20px 0;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        .token-display:hover {
+            color: var(--accent-color);
+            transform: scale(1.05);
+        }
+
+        .timer-info {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            font-size: 1rem;
+            font-weight: 600;
+            color: rgba(255,255,255,0.9);
+        }
+
+        /* Circular Timer SVG */
+        .timer-svg {
+            transform: rotate(-90deg);
+            width: 28px;
+            height: 28px;
+        }
+        
+        .timer-circle {
+            fill: none;
+            stroke: var(--accent-color);
+            stroke-width: 4;
+            stroke-dasharray: 75; /* 2 * PI * r (r=12) -> approx 75.4 */
+            stroke-dashoffset: 0;
+            transition: stroke-dashoffset 1s linear;
+            stroke-linecap: round;
+        }
+
+        .bg-circle {
+            stroke: rgba(255,255,255,0.1);
+            stroke-width: 4;
+            fill: none;
+        }
+
+        .copy-hint {
+            font-size: 0.8rem;
+            margin-top: 15px;
+            color: rgba(255,255,255,0.4);
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 40px;
+            background: rgba(255,255,255,0.95);
+            color: #1a1a1a;
+            padding: 12px 30px;
+            border-radius: 50px;
+            font-weight: 600;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            opacity: 0;
+            transform: translateY(30px) scale(0.9);
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+            pointer-events: none;
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .toast.show {
+            opacity: 1;
+            transform: translateY(0) scale(1);
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="glass-card">
+        <h2><i class="fas fa-shield-alt" style="color: var(--accent-color);"></i> 2FA Token</h2>
+        
+        <div class="input-group">
+            <label>SECRET KEY</label>
+            <input type="text" id="secretInput" placeholder="Masukkan Key (Cth: JBSW...)" autocomplete="off">
+        </div>
+
+        <button class="btn-generate" onclick="startGenerator()">
+            <i class="fas fa-sync-alt"></i> GENERATE KODE
+        </button>
+
+        <div class="result-container" id="resultArea">
+            <div class="label-result">Kode Autentikasi</div>
+            
+            <div class="token-display" id="tokenValue" onclick="copyToken()" title="Klik untuk menyalin">
+                --- ---
+            </div>
+
+            <div class="timer-info">
+                <svg class="timer-svg" viewBox="0 0 28 28">
+                    <circle class="bg-circle" cx="14" cy="14" r="12"></circle>
+                    <circle class="timer-circle" id="timerCircle" cx="14" cy="14" r="12"></circle>
+                </svg>
+                <span id="timerText">30s</span>
+            </div>
+            <div class="copy-hint"><i class="far fa-copy"></i> Ketuk kode untuk menyalin</div>
+        </div>
+    </div>
+</div>
+
+<div class="toast" id="toast">
+    <i class="fas fa-check-circle" style="color: #00b894;"></i> 
+    <span>Kode berhasil disalin!</span>
+</div>
+
+<script>
+    let intervalId = null;
+    let currentTotp = null;
+
+    // Fungsi dijalankan saat halaman selesai dimuat
+    document.addEventListener('DOMContentLoaded', () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const secretParam = urlParams.get('secret');
+
+        // Jika ada parameter 'secret' di URL
+        if (secretParam) {
+            document.getElementById('secretInput').value = secretParam;
+            startGenerator(); // Otomatis generate
+        }
+    });
+
+    function startGenerator() {
+        const secretInput = document.getElementById('secretInput').value.replace(/\s/g, '').toUpperCase();
+        const resultArea = document.getElementById('resultArea');
+
+        if (!secretInput) {
+            alert("Harap masukkan Secret Key terlebih dahulu.");
+            return;
+        }
+
+        try {
+            // Inisialisasi TOTP
+            currentTotp = new OTPAuth.TOTP({
+                algorithm: 'SHA1',
+                digits: 6,
+                period: 30,
+                secret: OTPAuth.Secret.fromBase32(secretInput)
+            });
+
+            // Tampilkan area hasil
+            resultArea.style.display = 'block';
+            
+            // Update pertama kali
+            updateDisplay();
+
+            // Atur interval update
+            if (intervalId) clearInterval(intervalId);
+            intervalId = setInterval(updateDisplay, 1000);
+
+        } catch (e) {
+            alert("Format Secret Key salah atau tidak valid (Base32).");
+            resultArea.style.display = 'none';
+        }
+    }
+
+    function updateDisplay() {
+        if (!currentTotp) return;
+
+        const token = currentTotp.generate();
+        const epoch = Math.floor(Date.now() / 1000);
+        const period = 30;
+        const timeLeft = period - (epoch % period);
+
+        // Format Text Token
+        const formattedToken = token.slice(0, 3) + ' ' + token.slice(3);
+        const tokenEl = document.getElementById('tokenValue');
+        tokenEl.innerText = formattedToken;
+
+        // Update Text Timer
+        document.getElementById('timerText').innerText = timeLeft + 's';
+
+        // Update Animasi Lingkaran
+        const maxDash = 75; 
+        const dashOffset = maxDash - (maxDash * timeLeft / period);
+        document.getElementById('timerCircle').style.strokeDashoffset = dashOffset;
+
+        // Warna Merah saat kritis (< 5 detik)
+        if (timeLeft <= 5) {
+            tokenEl.style.color = '#ff6b6b';
+            document.getElementById('timerCircle').style.stroke = '#ff6b6b';
+        } else {
+            tokenEl.style.color = '#ffffff';
+            document.getElementById('timerCircle').style.stroke = '#00d2ff';
+        }
+    }
+
+    function copyToken() {
+        const tokenText = document.getElementById('tokenValue').innerText.replace(/\s/g, '');
+        navigator.clipboard.writeText(tokenText).then(() => {
+            const toast = document.getElementById('toast');
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 2000);
+        });
+    }
+</script>
+
+</body>
+</html>
