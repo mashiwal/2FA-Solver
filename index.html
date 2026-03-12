@@ -1,279 +1,445 @@
 <!DOCTYPE html>
+
 <html lang="en">
+
 <head>
+
     <meta charset="UTF-8">
+
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>2FA Solver - Full Features</title>
-    <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/buffer.js"></script>
-    <script src="https://unpkg.com/@otplib/preset-browser@^12.0.0/index.js"></script>
+
+    <title>2FA Solver - Technical Edition</title>
+
     <script src="https://unpkg.com/jsqr/dist/jsQR.js"></script>
+
     <style>
+
         :root {
+
             --primary: #6366f1;
+
             --secondary: #10b981;
+
             --accent: #8b5cf6;
-            --dark: #1e293b;
+
+            --bg: #f1f5f9;
+
         }
-        body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background-color: #f1f5f9;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            margin: 0;
-            padding: 20px;
-        }
-        .card {
-            background: white;
-            padding: 2rem;
-            border-radius: 24px;
-            box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
-            width: 100%;
-            max-width: 420px;
-        }
-        h2 { text-align: center; color: var(--dark); margin-bottom: 24px; }
+
+        body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
+
+        .card { background: white; padding: 2rem; border-radius: 24px; box-shadow: 0 20px 25px rgba(0,0,0,0.1); width: 100%; max-width: 420px; }
+
         
-        .input-area {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 12px;
-        }
-        input[type="text"] {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            outline: none;
-            transition: border-color 0.2s;
-        }
-        input[type="text"]:focus { border-color: var(--primary); }
 
-        .btn-paste {
-            background: #f8fafc;
-            border: 2px solid #e2e8f0;
-            padding: 0 15px;
-            border-radius: 12px;
-            cursor: pointer;
-            font-weight: 600;
-        }
+        .input-group { display: flex; gap: 8px; margin-bottom: 15px; }
 
-        .btn-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-        .action-btn {
-            padding: 12px;
-            border: none;
-            border-radius: 12px;
-            color: white;
-            font-weight: 600;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .bg-scan { background-color: var(--secondary); }
-        .bg-upload { background-color: var(--accent); }
+        input[type="text"] { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 12px; outline: none; }
 
-        .otp-display-box {
-            background: #f8fbff;
-            padding: 30px 10px;
-            border-radius: 18px;
-            text-align: center;
-            cursor: pointer;
-            margin-bottom: 15px;
-            border: 1px solid #ebf4ff;
-        }
-        #otp-code {
-            font-size: 4rem;
-            font-weight: 800;
-            color: var(--primary);
-            display: block;
-            letter-spacing: 2px;
-            font-family: monospace;
-        }
-        .hint { font-size: 0.8rem; color: #94a3b8; margin-top: 10px; font-weight: 500; }
+        .btn-paste { background: #f8fafc; border: 2px solid #e2e8f0; padding: 0 15px; border-radius: 12px; cursor: pointer; font-weight: 600; }
 
-        #progress-container {
-            width: 100%;
-            height: 6px;
-            background: #e2e8f0;
-            border-radius: 10px;
-            overflow: hidden;
-            display: none;
-        }
-        #progress-bar {
-            height: 100%;
-            width: 100%;
-            background: var(--primary);
-            transition: width 1s linear;
-        }
 
-        canvas {
-            width: 100%;
-            border-radius: 12px;
-            display: none;
-            margin-bottom: 15px;
-        }
-        .footer { text-align: center; margin-top: 20px; font-size: 0.8rem; color: #64748b; }
+
+        .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px; }
+
+        .action-btn { padding: 12px; border: none; border-radius: 12px; color: white; font-weight: 600; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; }
+
+        .bg-scan { background: var(--secondary); }
+
+        .bg-upload { background: var(--accent); }
+
+
+
+        .otp-box { background: #f8fbff; padding: 30px; border-radius: 18px; text-align: center; cursor: pointer; margin-bottom: 15px; border: 1px solid #ebf4ff; }
+
+        #otp-code { font-size: 4rem; font-weight: 800; color: var(--primary); display: block; font-family: monospace; letter-spacing: 2px; }
+
+        
+
+        .tech-section { margin-top: 20px; text-align: left; }
+
+        .tech-header { color: var(--primary); cursor: pointer; font-weight: 600; display: flex; align-items: center; gap: 5px; font-size: 0.95rem; }
+
+        .tech-body { background: #f8fafc; padding: 15px; border-radius: 12px; margin-top: 10px; display: none; font-family: monospace; font-size: 0.8rem; color: #4a5568; line-height: 1.5; }
+
+        .label { color: #94a3b8; margin-bottom: 4px; display: block; font-size: 0.75rem; }
+
+        .val { word-break: break-all; margin-bottom: 12px; display: block; color: #334155; }
+
+        .highlight { color: var(--primary); font-weight: bold; }
+
+
+
+        #progress-container { width: 100%; height: 6px; background: #eee; border-radius: 10px; overflow: hidden; display: none; }
+
+        #progress-bar { height: 100%; width: 100%; background: var(--primary); transition: width 1s linear; }
+
+        canvas { width: 100%; border-radius: 12px; display: none; margin-top: 15px; }
+
     </style>
+
 </head>
+
 <body>
 
+
+
 <div class="card">
-    <h2>2FA Solver</h2>
+
+    <h2 style="text-align: center; margin-top: 0;">2FA Solver</h2>
+
     
-    <div class="input-area">
-        <input type="text" id="secret-input" placeholder="Paste Secret Key here...">
+
+    <div class="input-group">
+
+        <input type="text" id="secret-input" placeholder="Paste Secret Key...">
+
         <button class="btn-paste" onclick="pasteText()">📋 Paste</button>
+
     </div>
+
+
 
     <div class="btn-grid">
+
         <button class="action-btn bg-scan" onclick="startCamera()">📸 Camera</button>
+
         <button class="action-btn bg-upload" onclick="document.getElementById('file-input').click()">📁 Upload</button>
+
     </div>
+
     
+
     <input type="file" id="file-input" accept="image/*" style="display: none;" onchange="handleFile(event)">
+
     <canvas id="canvas"></canvas>
 
-    <div class="otp-display-box" onclick="copyOTP()">
+
+
+    <div class="otp-box" onclick="copyOTP()">
+
         <span id="otp-code">------</span>
-        <div class="hint" id="status-hint">CLICK TO COPY</div>
-    </div>
-    
-    <div id="progress-container">
-        <div id="progress-bar"></div>
+
+        <div id="timer-text" style="color: #94a3b8; margin-top:10px; font-size:0.8rem;">Click to Copy</div>
+
     </div>
 
-    <div class="footer">
-        Powered by otplib & jsQR
+    
+
+    <div id="progress-container">
+
+        <div id="progress-bar"></div>
+
     </div>
+
+
+
+    <div class="tech-section">
+
+        <div class="tech-header" onclick="toggleTech()">
+
+            <span id="arrow">▼</span> Technical Details
+
+        </div>
+
+        <div class="tech-body" id="tech-body">
+
+            <span class="label">Secret (hex):</span>
+
+            <span class="val" id="tech-hex"></span>
+
+            
+
+            <span class="label">Unix epoch / 30 (padded hex):</span>
+
+            <span class="val" id="tech-epoch"></span>
+
+            
+
+            <span class="label">HMAC:</span>
+
+            <span class="val" id="tech-hmac"></span>
+
+        </div>
+
+    </div>
+
 </div>
 
+
+
 <script>
-    const { totp } = otplib;
-    const secretInput = document.getElementById('secret-input');
-    const otpCode = document.getElementById('otp-code');
-    const statusHint = document.getElementById('status-hint');
-    const progressBar = document.getElementById('progress-bar');
-    const progressContainer = document.getElementById('progress-container');
 
-    // Auto-load
-    window.onload = () => {
-        const saved = localStorage.getItem('saved_2fa_secret');
-        if (saved) { secretInput.value = saved; updateOTP(); }
-    };
+    // --- Manual TOTP Logic (Pure JS) ---
 
-    function updateOTP() {
-        const secret = secretInput.value.trim().replace(/\s/g, '').toUpperCase();
-        if (!secret) {
-            otpCode.innerText = "------";
-            progressContainer.style.display = "none";
-            return;
+    function base32ToBuf(b32) {
+
+        const alphabet = "ABCDEFGHIJKLMNOPQRSTUVWXYZ234567";
+
+        let bits = "";
+
+        for (let i = 0; i < b32.length; i++) {
+
+            const val = alphabet.indexOf(b32[i].toUpperCase());
+
+            if (val === -1) continue;
+
+            bits += val.toString(2).padStart(5, '0');
+
         }
+
+        const buf = new Uint8Array(Math.floor(bits.length / 8));
+
+        for (let i = 0; i < buf.length; i++) buf[i] = parseInt(bits.substr(i * 8, 8), 2);
+
+        return buf;
+
+    }
+
+
+
+    async function updateEngine() {
+
+        const secret = document.getElementById('secret-input').value.replace(/\s/g, '');
+
+        if (secret.length < 8) return;
+
+
 
         try {
-            otpCode.innerText = totp.generate(secret);
-            localStorage.setItem('saved_2fa_secret', secret);
-            
+
+            const keyBuf = base32ToBuf(secret);
+
             const epoch = Math.floor(Date.now() / 1000);
-            const secondsLeft = 30 - (epoch % 30);
-            progressBar.style.width = (secondsLeft / 30 * 100) + "%";
-            progressContainer.style.display = "block";
+
+            const counter = Math.floor(epoch / 30);
+
+            const seconds = 30 - (epoch % 30);
+
+
+
+            // Display Hex Secret
+
+            const hexSecret = Array.from(keyBuf).map(b => b.toString(16).padStart(2, '0')).join('');
+
+            document.getElementById('tech-hex').innerText = `${hexSecret} (${keyBuf.length * 8} bits)`;
+
+
+
+            // Display Padded Epoch
+
+            const epochHex = counter.toString(16).padStart(16, '0');
+
+            document.getElementById('tech-epoch').innerText = epochHex;
+
+
+
+            // Manual HMAC (SubtleCrypto)
+
+            const counterBuf = new ArrayBuffer(8);
+
+            const view = new DataView(counterBuf);
+
+            view.setUint32(4, counter);
+
+
+
+            const cryptoKey = await crypto.subtle.importKey("raw", keyBuf, { name: "HMAC", hash: "SHA-1" }, false, ["sign"]);
+
+            const signature = await crypto.subtle.sign("HMAC", cryptoKey, counterBuf);
+
+            const hmac = new Uint8Array(signature);
+
+            const fullHmac = Array.from(hmac).map(b => b.toString(16).padStart(2, '0')).join('');
+
+
+
+            // Calculate OTP Code
+
+            const offset = hmac[hmac.length - 1] & 0xf;
+
+            const code = ((hmac[offset] & 0x7f) << 24 | (hmac[offset+1] & 0xff) << 16 | (hmac[offset+2] & 0xff) << 8 | (hmac[offset+3] & 0xff)) % 1000000;
+
             
-            if (statusHint.innerText !== "COPIED!") {
-                statusHint.innerText = `Updates in ${secondsLeft}s`;
-            }
-        } catch (e) {
-            otpCode.innerText = "ERROR";
-            progressContainer.style.display = "none";
-        }
+
+            // UI Updates
+
+            document.getElementById('otp-code').innerText = code.toString().padStart(6, '0');
+
+            document.getElementById('timer-text').innerText = `Updates in ${seconds}s`;
+
+            document.getElementById('progress-bar').style.width = (seconds / 30 * 100) + "%";
+
+            document.getElementById('progress-container').style.display = "block";
+
+
+
+            // HMAC UI with Dynamic Blue Highlight (matching your photo)
+
+            const start = offset * 2;
+
+            document.getElementById('tech-hmac').innerHTML = 
+
+                fullHmac.substring(0, start) + 
+
+                `<span class="highlight">${fullHmac.substring(start, start + 8)}</span>` + 
+
+                fullHmac.substring(start + 8);
+
+
+
+        } catch (e) { console.error(e); }
+
     }
 
-    async function copyOTP() {
-        if (otpCode.innerText === "------") return;
-        await navigator.clipboard.writeText(otpCode.innerText);
-        const originalHint = statusHint.innerText;
-        statusHint.innerText = "COPIED!";
-        statusHint.style.color = "var(--secondary)";
-        setTimeout(() => {
-            statusHint.innerText = originalHint;
-            statusHint.style.color = "#94a3b8";
-        }, 1500);
+
+
+    // --- Interface Features ---
+
+    function toggleTech() {
+
+        const body = document.getElementById('tech-body');
+
+        const arrow = document.getElementById('arrow');
+
+        const isHidden = body.style.display === "none" || body.style.display === "";
+
+        body.style.display = isHidden ? "block" : "none";
+
+        arrow.innerText = isHidden ? "▲" : "▼";
+
     }
+
+
 
     async function pasteText() {
-        try {
-            const text = await navigator.clipboard.readText();
-            secretInput.value = text.trim();
-            updateOTP();
-        } catch (e) { alert("Please allow clipboard access"); }
+
+        const text = await navigator.clipboard.readText();
+
+        document.getElementById('secret-input').value = text.trim();
+
+        updateEngine();
+
     }
+
+
+
+    function copyOTP() {
+
+        navigator.clipboard.writeText(document.getElementById('otp-code').innerText);
+
+        const timer = document.getElementById('timer-text');
+
+        const old = timer.innerText;
+
+        timer.innerText = "COPIED!";
+
+        setTimeout(() => timer.innerText = old, 1000);
+
+    }
+
+
+
+    // Camera & Upload Logic
 
     function handleFile(event) {
-        const file = event.target.files[0];
-        if (!file) return;
+
         const reader = new FileReader();
+
         reader.onload = (e) => {
+
             const img = new Image();
+
             img.onload = () => {
+
                 const cvs = document.getElementById("canvas");
+
                 const ctx = cvs.getContext("2d");
+
                 cvs.width = img.width; cvs.height = img.height;
+
                 ctx.drawImage(img, 0, 0);
+
                 const code = jsQR(ctx.getImageData(0,0,cvs.width,cvs.height).data, cvs.width, cvs.height);
+
                 if(code) {
-                    processQRData(code.data);
-                } else { alert("QR Code not found!"); }
+
+                    document.getElementById('secret-input').value = code.data.includes("secret=") ? new URL(code.data).searchParams.get("secret") : code.data;
+
+                    updateEngine();
+
+                }
+
             };
+
             img.src = e.target.result;
+
         };
-        reader.readAsDataURL(file);
+
+        reader.readAsDataURL(event.target.files[0]);
+
     }
+
+
 
     function startCamera() {
-        const cvs = document.getElementById("canvas");
-        const ctx = cvs.getContext("2d");
+
         navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } }).then(stream => {
+
             const video = document.createElement("video");
+
             video.srcObject = stream;
-            video.setAttribute("playsinline", true);
+
             video.play();
+
+            const cvs = document.getElementById("canvas");
+
             cvs.style.display = "block";
+
             function scan() {
+
                 if (video.readyState === video.HAVE_ENOUGH_DATA) {
-                    cvs.height = video.videoHeight; cvs.width = video.videoWidth;
-                    ctx.drawImage(video, 0, 0);
-                    const code = jsQR(ctx.getImageData(0,0,cvs.width,cvs.height).data, cvs.width, cvs.height);
+
+                    cvs.width = video.videoWidth; cvs.height = video.videoHeight;
+
+                    cvs.getContext("2d").drawImage(video, 0, 0);
+
+                    const code = jsQR(cvs.getContext("2d").getImageData(0,0,cvs.width,cvs.height).data, cvs.width, cvs.height);
+
                     if (code) {
-                        processQRData(code.data);
+
+                        document.getElementById('secret-input').value = code.data.includes("secret=") ? new URL(code.data).searchParams.get("secret") : code.data;
+
                         stream.getTracks().forEach(t => t.stop());
+
                         cvs.style.display = "none";
+
+                        updateEngine();
+
                         return;
+
                     }
+
                 }
-                if(cvs.style.display !== "none") requestAnimationFrame(scan);
+
+                requestAnimationFrame(scan);
+
             }
+
             requestAnimationFrame(scan);
+
         });
+
     }
 
-    function processQRData(data) {
-        if (data.includes("secret=")) {
-            const url = new URL(data);
-            secretInput.value = url.searchParams.get("secret");
-        } else {
-            secretInput.value = data;
-        }
-        updateOTP();
-    }
 
-    setInterval(updateOTP, 1000);
-    secretInput.addEventListener('input', updateOTP);
+
+    setInterval(updateEngine, 1000);
+
+    document.getElementById('secret-input').addEventListener('input', updateEngine);
+
 </script>
+
 </body>
+
 </html>
