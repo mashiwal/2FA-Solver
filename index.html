@@ -246,11 +246,11 @@
         </div>
 
         <button class="btn-generate" onclick="startGenerator()">
-            <i class="fas fa-sync-alt"></i> DAPATKAN KODE
+            <i class="fas fa-sync-alt"></i> GET CODE
         </button>
 
         <div class="result-container" id="resultArea">
-            <div class="label-result">Kode Autentikasi</div>
+            <div class="label-result">Authentication Code</div>
             
             <div class="token-display" id="tokenValue" onclick="copyToken()" title="Klik untuk menyalin">
                 --- ---
@@ -263,14 +263,14 @@
                 </svg>
                 <span id="timerText">30s</span>
             </div>
-            <div class="copy-hint"><i class="far fa-copy"></i> Ketuk kode untuk menyalin</div>
+            <div class="copy-hint"><i class="far fa-copy"></i> Tap code to copy</div>
         </div>
     </div>
 </div>
 
 <div class="toast" id="toast">
     <i class="fas fa-check-circle" style="color: #00b894;"></i> 
-    <span>Kode berhasil disalin!</span>
+    <span>Code has been successfully copied!</span>
 </div>
 
 <script>
@@ -294,7 +294,7 @@
         const resultArea = document.getElementById('resultArea');
 
         if (!secretInput) {
-            alert("Harap masukkan Secret Key terlebih dahulu.");
+            alert("Please enter Secret Key first.");
             return;
         }
 
@@ -318,7 +318,7 @@
             intervalId = setInterval(updateDisplay, 1000);
 
         } catch (e) {
-            alert("Format Secret Key salah atau tidak valid (Base32).");
+            alert("Secret Key format is incorrect or invalid (Base32).");
             resultArea.style.display = 'none';
         }
     }
